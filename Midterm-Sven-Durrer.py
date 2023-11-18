@@ -1,8 +1,11 @@
 #asks for the scale of the square matrix
 scale = int(input('scale of the matrix? '))
+#asks if you want to use the solving function
+promt = input('solve? y/n: ')
 
 matrix = []
 index_matrix = []
+vector = []
 
 #creates matrix of the size of the input value and allocates the input values to the correct positions
 #also creates an index matrix of the same size
@@ -15,10 +18,59 @@ for index in range(scale):
             index_matrix[index].append(1)
         else:
             index_matrix[index].append(0)
+
+#checks if you want to use the solving function            
+if promt == 'y':    
+    #asks for the vector values    
+    for index in range(scale):
+        vector.append(float(input(f'right-hand side vector value {index} : ')))
         
 print('\nyour matrix:')
 for row in matrix:
     print(row)
+
+if promt == 'y':
+    print('\nyour right-hand side vector:')
+    print(vector)
+
+#creates submatrix for the calculation of the determinant
+def sub_matirx(matrix, i, j):   
+    submat = []
+    for row in (matrix[:i] + matrix[i+1:]):
+        submat.append(row[:j] + row[j+1:])
+    return submat
+
+#calcualtes the determinant using recursion and the Laplace expansion theorem
+def determinant(matrix):
+    scale = len(matrix)
+    if scale == 1:
+        return matrix[0][0]
+    elif scale == 2:
+        det = matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]
+        return det
+    elif scale == 3:
+        det = matrix[0][0]*matrix[1][1]*matrix[2][2] + matrix[0][1]*matrix[1][2]*matrix[2][0] + matrix[0][2]*matrix[1][0]*matrix[2][1] - matrix[0][2]*matrix[1][1]*matrix[2][0] - matrix[0][1]*matrix[1][0]*matrix[2][2] - matrix[0][0]*matrix[1][2]*matrix[2][1]
+        return det
+    else:    
+        det = 0
+        for j in range(scale):
+            det +=  ((-1) ** j) * matrix[1][j] * determinant(sub_matirx(matrix, 1, j))
+        return det
+
+#solves the system of equations using the inverse and the right-hand side vector b
+def solve(inverse, vector):
+    solution = [0.0]*len(vector)
+    for index in range(len(solution)):
+        for sub_index in range(len(vector)):
+            solution[index] += inverse[index][sub_index] * vector[sub_index]
+    return solution
+            
+
+
+#if the determinant is 0 the matrix is singular and not invertible    
+if determinant(matrix) == 0:
+    print('\nmatrix is not invertible as it is singular')
+    quit()
 
 #Step 5: checks if the n or m are reached    
 pivot = [0,0]
@@ -75,3 +127,7 @@ for row in matrix:
 print('\ninverse matrix:')
 for row in index_matrix:
     print(row)
+
+if promt == 'y':    
+    print('\nSolution:')
+    print(solve(index_matrix, vector))
